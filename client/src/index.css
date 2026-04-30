@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-muted text-gray-800 font-body antialiased;
+    }
+
+    ::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-gray-100;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-primary/30 rounded-full;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-primary/60;
+    }
+}
+
+@layer components {
+
+    /* ── Buttons ── */
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 font-semibold text-sm px-5 py-2.5 rounded-lg bg-violet-gradient text-white shadow-md hover:shadow-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 font-semibold text-sm px-5 py-2.5 rounded-lg bg-amber-gradient text-white shadow-md hover:shadow-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200;
+    }
+
+    .btn-outline {
+        @apply inline-flex items-center justify-center gap-2 font-semibold text-sm px-5 py-2.5 rounded-lg border-2 border-primary text-primary bg-transparent hover:bg-primary hover:text-white transition-all duration-200 active:scale-[0.98];
+    }
+
+    .btn-ghost {
+        @apply inline-flex items-center gap-1 text-gray-600 text-sm px-3 py-2 hover:text-primary transition-colors duration-150;
+    }
+
+    /* ── Cards ── */
+    .card {
+        @apply bg-white rounded-2xl shadow-card hover:shadow-card-hover transition-shadow duration-300;
+    }
+
+    .card-flat {
+        @apply bg-white rounded-2xl border border-border;
+    }
+
+    /* ── Badges ── */
+    .badge {
+        @apply inline-block text-[10px] font-bold tracking-wide uppercase px-2 py-0.5 rounded-full;
+    }
+
+    .badge-purple {
+        @apply badge bg-primary/10 text-primary;
+    }
+
+    .badge-amber {
+        @apply badge bg-amber/10 text-amber-dark;
+    }
+
+    .badge-green {
+        @apply badge bg-emerald-100 text-emerald-700;
+    }
+
+    .badge-red {
+        @apply badge bg-red-100 text-red-700;
+    }
+
+    /* ── Inputs ── */
+    .input {
+        @apply w-full bg-white border border-border text-gray-800 placeholder-gray-400 px-4 py-2.5 text-sm rounded-lg outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-150;
+    }
+
+    /* ── Skeletons ── */
+    .skeleton {
+        @apply bg-gray-100 animate-pulse rounded-xl;
+    }
+
+    /* ── Section labels ── */
+    .section-eyebrow {
+        @apply text-[11px] tracking-[0.2em] uppercase font-semibold text-primary;
+    }
+
+    .section-title {
+        @apply font-display text-2xl sm:text-3xl text-gray-900 leading-tight;
+    }
+}
