@@ -44,7 +44,8 @@ export default function ProductGrid({ limit, featuredOnly = false }) {
             if (search) p.search = search;
             if (limit) p.limit = limit;
             if (featuredOnly) p.featured = 'true';
-            setProducts(await fetchProducts(p));
+            const result = await fetchProducts(p);
+            setProducts(Array.isArray(result) ? result : []);
         } catch { setError('Failed to load products.'); }
         finally { setLoading(false); }
     }, [category, sort, search, limit]);
@@ -130,7 +131,7 @@ export default function ProductGrid({ limit, featuredOnly = false }) {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                     {loading
                         ? Array.from({ length: limit || 10 }).map((_, i) => <SkeletonCard key={i} />)
-                        : products.map((p, i) => <ProductCard key={p._id} product={p} index={i} />)
+                        : (products ?? []).map((p, i) => <ProductCard key={p._id} product={p} index={i} />)
                     }
                 </div>
             )}

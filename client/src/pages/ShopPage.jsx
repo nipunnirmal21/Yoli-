@@ -37,7 +37,7 @@ export default function ShopPage() {
         );
     }
 
-    const { shop, products, productCount } = data;
+    const { shop = {}, products = [], productCount = 0 } = data;
 
     const fmt = (n) => n?.toLocaleString('en-LK');
 
@@ -98,7 +98,7 @@ export default function ShopPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {products.map((p) => <ProductCard key={p._id} product={p} />)}
+                    {(products ?? []).map((p) => <ProductCard key={p._id} product={p} />)}
                 </div>
             )}
         </div>
