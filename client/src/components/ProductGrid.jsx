@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { fetchProducts } from '../services/api';
 import ProductCard from './ProductCard';
@@ -10,9 +10,6 @@ const SORT_OPTIONS = [
     { label: 'Price: High to Low', value: 'price_desc' },
     { label: 'Newest', value: 'newest' },
 ];
-
-const MAX_RETRIES = 8;        // keep retrying up to 8 times
-const RETRY_DELAY_MS = 3000;  // 3 seconds between each retry
 
 function SkeletonCard() {
     return (
@@ -33,20 +30,14 @@ export default function ProductGrid({ limit, featuredOnly = false }) {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [retryCount, setRetryCount] = useState(0);
-    const retryTimer = useRef(null);
 
     const category = searchParams.get('category') || 'all';
     const sort = searchParams.get('sort') || 'popularity';
     const search = searchParams.get('search') || '';
 
-    const load = useCallback(async (attempt = 0) => {
-        if (attempt === 0) {
-            setLoading(true);
-            setError(null);
-            setProducts([]);
-        }
-        setRetryCount(attempt);
+    const load = useCallback(async () => {
+        setLoading(true);
+        setError(null);
         try {
             const p = {};
             if (category !== 'all') p.category = category;
@@ -54,35 +45,16 @@ export default function ProductGrid({ limit, featuredOnly = false }) {
             if (search) p.search = search;
             if (limit) p.limit = limit;
             if (featuredOnly) p.featured = 'true';
-
             const result = await fetchProducts(p);
-            const list = Array.isArray(result) ? result : [];
-
-            if (list.length === 0 && attempt < MAX_RETRIES) {
-                // Backend still waking up — retry, keep skeletons visible
-                retryTimer.current = setTimeout(() => load(attempt + 1), RETRY_DELAY_MS);
-                return;
-            }
-
-            setProducts(list);
-            setLoading(false);
+            setProducts(Array.isArray(result) ? result : []);
         } catch {
-            if (attempt < MAX_RETRIES) {
-                // Don't show error yet — just retry silently
-                retryTimer.current = setTimeout(() => load(attempt + 1), RETRY_DELAY_MS);
-                return;
-            }
-            setError('Could not load products. Please refresh the page.');
+            setError('Failed to load products.');
+        } finally {
             setLoading(false);
         }
     }, [category, sort, search, limit, featuredOnly]);
 
-    useEffect(() => {
-        load(0);
-        return () => {
-            if (retryTimer.current) clearTimeout(retryTimer.current);
-        };
-    }, [load]);
+    useEffect(() => { load(); }, [load]);
 
     const set = (key, val) => {
         const n = new URLSearchParams(searchParams);
@@ -99,7 +71,6 @@ export default function ProductGrid({ limit, featuredOnly = false }) {
             {/* Controls — hidden in featured mode */}
             {!featuredOnly && (
                 <div className="bg-white rounded-lg shadow-card p-4 mb-5">
-                    {/* Search chips */}
                     {search && (
                         <div className="flex items-center gap-2 mb-3 flex-wrap">
                             <span className="text-sm text-gray-600">Results for</span>
@@ -113,30 +84,25 @@ export default function ProductGrid({ limit, featuredOnly = false }) {
                         </div>
                     )}
 
-                    {/* Category tabs */}
                     <div className="flex flex-wrap gap-2 mb-4">
                         {CATEGORIES.map((c) => (
                             <button
                                 key={c}
                                 onClick={() => set('category', c)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all ${category === c
+                                className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition-all ${
+                                    category === c
                                         ? 'bg-primary text-white'
                                         : 'bg-gray-100 text-gray-600 hover:bg-orange-50 hover:text-primary'
-                                    }`}
+                                }`}
                             >
                                 {c === 'all' ? 'All' : c}
                             </button>
                         ))}
                     </div>
 
-                    {/* Sort + count row */}
                     <div className="flex items-center justify-between border-t border-gray-100 pt-3">
                         <p className="text-xs text-gray-400">
-                            {loading
-                                ? retryCount > 0
-                                    ? `Loading... (attempt ${retryCount + 1})`
-                                    : 'Loading...'
-                                : `${products.length} product${products.length !== 1 ? 's' : ''} found`}
+                            {loading ? 'Loading...' : `${products.length} product${products.length !== 1 ? 's' : ''} found`}
                         </p>
                         <div className="flex items-center gap-2">
                             <span className="text-xs text-gray-500">Sort by:</span>
@@ -154,22 +120,15 @@ export default function ProductGrid({ limit, featuredOnly = false }) {
                 </div>
             )}
 
-            {/* Subtle hint in featured mode while retrying */}
-            {featuredOnly && loading && retryCount > 0 && (
-                <p className="text-xs text-gray-400 text-center mb-3 animate-pulse">
-                    ⏳ Loading products, please wait...
-                </p>
-            )}
-
-            {/* Error — only after all retries exhausted */}
+            {/* Error */}
             {error && (
                 <div className="text-center py-12">
                     <p className="text-gray-500 text-sm mb-3">{error}</p>
-                    <button onClick={() => load(0)} className="btn-outline text-xs px-5 py-2">Retry</button>
+                    <button onClick={load} className="btn-outline text-xs px-5 py-2">Retry</button>
                 </div>
             )}
 
-            {/* Grid — skeletons while loading, real cards when ready */}
+            {/* Grid */}
             {!error && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                     {loading
@@ -179,7 +138,7 @@ export default function ProductGrid({ limit, featuredOnly = false }) {
                 </div>
             )}
 
-            {/* Empty — only when NOT loading, no error, and still no products after all retries */}
+            {/* Empty state */}
             {!loading && !error && products.length === 0 && (
                 <div className="text-center py-16 bg-white rounded-lg">
                     <div className="text-5xl mb-3">🔍</div>

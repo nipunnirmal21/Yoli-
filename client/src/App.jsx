@@ -6,11 +6,28 @@ import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import ShopPage from './pages/ShopPage';
-import DemoNotice from './components/DemoNotice';
+import LaunchOverlay from './components/LaunchOverlay';
+import { useState, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
+
 export default function App() {
+    const [isLaunched, setIsLaunched] = useState(() => {
+        return sessionStorage.getItem('yoli_launched') === 'true';
+    });
+
+    const handleLaunch = () => {
+        setIsLaunched(true);
+        sessionStorage.setItem('yoli_launched', 'true');
+    };
+
     return (
         <div className="min-h-screen flex flex-col bg-muted">
-            <DemoNotice />
+            <AnimatePresence>
+                {!isLaunched && (
+                    <LaunchOverlay onLaunch={handleLaunch} />
+                )}
+            </AnimatePresence>
+
             <Navbar />
             <CartDrawer />
             <main className="flex-1">
