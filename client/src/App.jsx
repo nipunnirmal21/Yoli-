@@ -6,10 +6,11 @@ import Home from './pages/Home';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import ShopPage from './pages/ShopPage';
+import DemoNotice from './components/DemoNotice';
 export default function App() {
     return (
         <div className="min-h-screen flex flex-col bg-muted">
-
+            <DemoNotice />
             <Navbar />
             <CartDrawer />
             <main className="flex-1">

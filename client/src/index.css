@@ -105,3 +105,8 @@
         @apply font-display text-2xl sm:text-3xl text-gray-900 leading-tight;
     }
 }
+
+@keyframes demoSlideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
