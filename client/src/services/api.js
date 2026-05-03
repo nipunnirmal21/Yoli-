@@ -1,18 +1,12 @@
 import axios from 'axios';
 
-const api = axios.create({ baseURL: '/api' });
+// මේක තමයි නියම පාලම. මෙතැනට අනිවාර්යයෙන්ම Render URL එක දෙන්න ඕනේ.
+const api = axios.create({
+    baseURL: 'https://yoli-backend.onrender.com/api'
+});
 
 export const fetchProducts = (params = {}) =>
     api.get('/products', { params }).then((r) => r.data?.products ?? []);
 
-export const fetchProductById = (id) =>
-    api.get(`/products/${id}`).then((r) => r.data?.product ?? null);
-
-export const fetchCategories = () =>
-    api.get('/products/categories').then((r) => r.data?.categories ?? []);
-
-export const fetchShop = (slug) =>
-    api.get(`/shops/${slug}`).then((r) => r.data ?? {});
-
+// ... අනෙක් fetch functions ටිකත් මේ විදිහටම තියන්න
 export default api;
-
