@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-// පාලම හදන්නේ මෙතැනින්. කෙලින්ම Render URL එක ලබා දෙන්න.
+// සයිට් එක සහ Backend එක යා කරන පාලම මෙන්න මෙතැනයි
 const api = axios.create({
     baseURL: 'https://yoli-backend.onrender.com/api'
 });

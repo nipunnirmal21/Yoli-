@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
-const fs = require('fs');
+// මෙන්න මෙතැනදී අපි කෙලින්ම ඔයාගේ localProducts.js එක ගන්නවා
+const productsData = require('./data/localProducts');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -9,15 +9,10 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// සරලම ක්‍රමය: ෆයිල් එකෙන් ඩේටා අරන් දෙන එක
+// API එකෙන් ඩේටා දෙන හැටි
 app.get('/api/products', (req, res) => {
-    try {
-        const dataPath = path.join(__dirname, 'data', 'products.json');
-        const productsData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-        res.json({ products: productsData });
-    } catch (error) {
-        res.status(500).json({ message: "File read error" });
-    }
+    // localProducts.js එක ඇතුළේ ඩේටා ටික තියෙන නිසා කෙලින්ම යවනවා
+    res.json({ products: productsData });
 });
 
 app.listen(PORT, () => {
