@@ -5,16 +5,8 @@ const productSchema = new mongoose.Schema(
         name: { type: String, required: true, trim: true },
         description: { type: String, required: true },
         price: { type: Number, required: true, min: 0 },
-        seller: {
-            name: { type: String, required: true },
-            slug: { type: String, required: true, lowercase: true },
-            logo: { type: String, default: '' },
-            description: { type: String, default: '' },
-            location: { type: String, default: 'Pakistan' },
-            rating: { type: Number, default: 4.5 },
-            totalSales: { type: Number, default: 0 },
-            joined: { type: String, default: '2023' },
-        },
+        // Embedded seller object from admin, or legacy string store name (resolved via Stores collection in API)
+        seller: { type: mongoose.Schema.Types.Mixed, required: true },
         category: {
             type: String,
             required: true,

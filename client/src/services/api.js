@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // සයිට් එක සහ Backend එක යා කරන පාලම මෙන්න මෙතැනයි
 const api = axios.create({
-    baseURL: 'https://yoli-backend.onrender.com/api'
+    baseURL: '/api'   // Vite proxy → http://localhost:5000/api
 });
 
 export const fetchProducts = (params = {}) =>

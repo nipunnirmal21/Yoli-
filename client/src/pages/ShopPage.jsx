@@ -52,8 +52,8 @@ export default function ShopPage() {
                 <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-6">
                     {/* Logo */}
                     <div className="w-20 h-20 rounded-2xl overflow-hidden bg-white/20 border-4 border-white/30 flex-shrink-0">
-                        {shop.logo
-                            ? <img src={shop.logo} alt={shop.name} className="w-full h-full object-cover" />
+                        {shop.logo_url || shop.logo
+                            ? <img src={shop.logo_url || shop.logo} alt={shop.name} className="w-full h-full object-cover" />
                             : <div className="w-full h-full flex items-center justify-center text-4xl">🏪</div>
                         }
                     </div>

@@ -59,7 +59,7 @@ export default function ProductDetail() {
                 <div className="card overflow-hidden">
                     <div className="relative aspect-square bg-subtle">
                         {!imgOk && <div className="absolute inset-0 skeleton" />}
-                        <img src={product.image} alt={product.name} onLoad={() => setImgOk(true)}
+                        <img src={product.image || product.image_url} alt={product.name} onLoad={() => setImgOk(true)}
                             className={`w-full h-full object-contain p-4 transition-opacity duration-300 ${imgOk ? 'opacity-100' : 'opacity-0'}`} />
                         {product.badge && <span className={`absolute top-3 left-3 ${BADGE[product.badge] || 'badge-purple'}`}>{product.badge}</span>}
                     </div>

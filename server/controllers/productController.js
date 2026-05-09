@@ -1,45 +1,41 @@
-const localProducts = require('../data/localProducts');
+const Product = require('../models/Product');
+const { enrichProductsSellers } = require('../utils/sellerResolve');
 
-// GET /api/products — with optional ?category, ?sort, ?search, ?limit
-const getAllProducts = (req, res) => {
+// GET /api/products — with optional ?category, ?sort, ?search, ?limit (if mounted on router)
+const getAllProducts = async (req, res) => {
     try {
         const { category, sort, search, limit, featured } = req.query;
-        let results = [...localProducts];
+        const dbProducts = await Product.find().lean().sort({ createdAt: -1 });
+        let results = await enrichProductsSellers(dbProducts);
 
-        // Category filter
         if (category && category !== 'all') {
-            results = results.filter(p => p.category === category);
+            results = results.filter((p) => p.category === category);
         }
-        
-        // Text search (name, description, category)
+
         if (search) {
             const q = search.toLowerCase();
-            results = results.filter(p =>
-                p.name.toLowerCase().includes(q) ||
-                p.description.toLowerCase().includes(q) ||
-                p.category.toLowerCase().includes(q)
+            results = results.filter(
+                (p) =>
+                    (p.name && p.name.toLowerCase().includes(q)) ||
+                    (p.description && p.description.toLowerCase().includes(q)) ||
+                    (p.category && p.category.toLowerCase().includes(q))
             );
         }
 
-        // Apply Sorting
         results.sort((a, b) => {
-            // Primary sort: Featured status (if requested)
             if (featured === 'true') {
                 if (a.isFeatured && !b.isFeatured) return -1;
                 if (!a.isFeatured && b.isFeatured) return 1;
             }
-
-            // Secondary sort: User-requested sort
             if (sort === 'price_asc') return a.price - b.price;
             if (sort === 'price_desc') return b.price - a.price;
-            if (sort === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
-
-            // Default secondary: Popularity
-            return b.popularity - a.popularity;
+            if (sort === 'newest') {
+                return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+            }
+            return (b.popularity || 0) - (a.popularity || 0);
         });
 
-        // Limit
-        if (limit) results = results.slice(0, parseInt(limit));
+        if (limit) results = results.slice(0, parseInt(limit, 10));
 
         res.json({ success: true, count: results.length, products: results });
     } catch (err) {
@@ -47,23 +43,27 @@ const getAllProducts = (req, res) => {
     }
 };
 
-// GET /api/products/categories
-const getCategories = (req, res) => {
+const getCategories = async (req, res) => {
     try {
-        const categories = [...new Set(localProducts.map(p => p.category))];
-        res.json({ success: true, categories: ['all', ...categories] });
+        const categories = await Product.distinct('category');
+        res.json({ success: true, categories: ['all', ...categories.filter(Boolean)] });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 };
 
-// GET /api/products/:id
-const getProductById = (req, res) => {
+const getProductById = async (req, res) => {
     try {
-        const product = localProducts.find(p => p._id === req.params.id);
-        if (!product) {
+        const { enrichProductSeller } = require('../utils/sellerResolve');
+        const id = req.params.id;
+        if (!/^[a-f\d]{24}$/i.test(id)) {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
+        const doc = await Product.findById(id).lean();
+        if (!doc) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+        const product = await enrichProductSeller(doc);
         res.json({ success: true, product });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
