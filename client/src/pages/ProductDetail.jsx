@@ -59,7 +59,7 @@ export default function ProductDetail() {
                 <div className="card overflow-hidden">
                     <div className="relative aspect-square bg-subtle">
                         {!imgOk && <div className="absolute inset-0 skeleton" />}
-                        <img src={product.image} alt={product.name} onLoad={() => setImgOk(true)}
+                        <img src={product.image || product.image_url} alt={product.name} onLoad={() => setImgOk(true)}
                             className={`w-full h-full object-contain p-4 transition-opacity duration-300 ${imgOk ? 'opacity-100' : 'opacity-0'}`} />
                         {product.badge && <span className={`absolute top-3 left-3 ${BADGE[product.badge] || 'badge-purple'}`}>{product.badge}</span>}
                     </div>
@@ -99,29 +99,47 @@ export default function ProductDetail() {
                     <p className="text-gray-600 text-sm leading-relaxed">{product.description}</p>
 
                     {/* ── SHOP CARD ── */}
-                    {product.seller && (
-                        <Link to={`/shop/${product.seller.slug}`}
-                            className="flex items-center gap-3 p-4 rounded-2xl border-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5 transition-all group">
-                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-primary/10 flex-shrink-0">
-                                {product.seller.logo
-                                    ? <img src={product.seller.logo} alt={product.seller.name} className="w-full h-full object-cover" />
-                                    : <div className="w-full h-full flex items-center justify-center text-2xl">🏪</div>
-                                }
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-xs text-gray-500 mb-0.5">Sold by</p>
-                                <p className="font-semibold text-gray-800 group-hover:text-primary transition-colors">{product.seller.name}</p>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-xs text-gray-400">⭐ {product.seller.rating}</span>
-                                    <span className="text-gray-200 text-xs">|</span>
-                                    <span className="text-xs text-gray-400">{product.seller.location}</span>
+                    {product.seller && (() => {
+                        // Normalize seller regardless of shape (object or string)
+                        const raw = product.seller;
+                        const s = (typeof raw === 'object' && raw !== null && raw.name)
+                            ? raw
+                            : {
+                                name:     String(raw),
+                                slug:     String(raw).toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+                                logo:     null,
+                                rating:   null,
+                                location: null,
+                              };
+                        const logo = s.logo || s.logo_url || null;
+                        const slug = s.slug || s.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
+
+                        return (
+                            <Link to={`/shop/${slug}`}
+                                className="flex items-center gap-3 p-4 rounded-2xl border-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5 transition-all group">
+                                <div className="w-12 h-12 rounded-xl overflow-hidden bg-primary/10 flex-shrink-0">
+                                    {logo
+                                        ? <img src={logo} alt={s.name} className="w-full h-full object-cover" />
+                                        : <div className="w-full h-full flex items-center justify-center text-2xl">🏪</div>
+                                    }
                                 </div>
-                            </div>
-                            <svg className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                            </svg>
-                        </Link>
-                    )}
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-gray-500 mb-0.5">Sold by</p>
+                                    <p className="font-semibold text-gray-800 group-hover:text-primary transition-colors">{s.name}</p>
+                                    {(s.rating || s.location) && (
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            {s.rating && <span className="text-xs text-gray-400">⭐ {s.rating}</span>}
+                                            {s.rating && s.location && <span className="text-gray-200 text-xs">|</span>}
+                                            {s.location && <span className="text-xs text-gray-400">{s.location}</span>}
+                                        </div>
+                                    )}
+                                </div>
+                                <svg className="w-4 h-4 text-gray-400 group-hover:text-primary transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </Link>
+                        );
+                    })()}
 
                     {/* Qty + buttons */}
                     {product.stock > 0 && (

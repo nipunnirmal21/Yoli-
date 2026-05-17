@@ -19,7 +19,7 @@ export default function ProductCard({ product }) {
             {/* Image */}
             <Link to={`/products/${product._id}`} className="relative block bg-subtle overflow-hidden rounded-t-2xl">
                 <img
-                    src={product.image}
+                    src={product.image || product.image_url}
                     alt={product.name}
                     loading="lazy"
                     className="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-110"
