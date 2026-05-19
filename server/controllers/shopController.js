@@ -4,7 +4,11 @@ const Product = require('../models/Product');
 // GET /api/shops/:slug
 const getShop = async (req, res) => {
     try {
-        const { slug } = req.params;
+        const slug = String(req.params.slug || '').toLowerCase();
+        const store = await Store.findOne({ slug });
+        if (!store) {
+            return res.status(404).json({ message: 'Shop not found' });
+        }
 
         // 1. Find the store in MongoDB by slug
         const store = await Store.findOne({ slug }).lean();
