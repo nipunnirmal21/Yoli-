@@ -1,16 +1,12 @@
-const Store   = require('../models/Store');
+const Store = require('../models/Store');
 const Product = require('../models/Product');
 
 // GET /api/shops/:slug
 const getShop = async (req, res) => {
     try {
         const slug = String(req.params.slug || '').toLowerCase();
-        const store = await Store.findOne({ slug });
-        if (!store) {
-            return res.status(404).json({ message: 'Shop not found' });
-        }
 
-        // 1. Find the store in MongoDB by slug
+        // 1. Find the store in MongoDB by slug (Duplicate removed, using .lean() for performance)
         const store = await Store.findOne({ slug }).lean();
         if (!store) {
             return res.status(404).json({ message: 'Shop not found' });
@@ -18,23 +14,20 @@ const getShop = async (req, res) => {
 
         // 2. Build the shop object the frontend expects
         const shop = {
-            name:        store.name,
-            slug:        store.slug,
-            logo:        store.logo_url || '',
-            logo_url:    store.logo_url || '',
+            name: store.name,
+            slug: store.slug,
+            logo: store.logo_url || '',
+            logo_url: store.logo_url || '',
             description: store.description || '',
-            location:    store.location || '',
-            rating:      store.rating   || 4.8,
-            totalSales:  store.totalSales || 0,
-            joined:      store.joined   || '2024',
-            banner_url:  store.banner_url || '',
-            tagline:     store.tagline  || '',
+            location: store.location || '',
+            rating: store.rating || 4.8,
+            totalSales: store.totalSales || 0,
+            joined: store.joined || '2024',
+            banner_url: store.banner_url || '',
+            tagline: store.tagline || '',
         };
 
         // 3. Find products that belong to this store.
-        //    Products may store seller as:
-        //      a) an embedded object with seller.name matching store name
-        //      b) an embedded object with seller.slug matching store slug
         const products = await Product.find({
             $or: [
                 { 'seller.slug': slug },
