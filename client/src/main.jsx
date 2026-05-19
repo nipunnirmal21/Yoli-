@@ -5,7 +5,11 @@ import { Toaster } from 'react-hot-toast';
 import App from './App.jsx';
 import { CartProvider } from './context/CartContext.jsx';
 import { HelmetProvider } from 'react-helmet-async';
+import axios from 'axios'; // 👈 Axios අලුතින් import කරා
 import './index.css';
+
+// මුළු සයිට් එකේම Direct Axios කෝල්ස් Render එකට හරවනවා 🚀
+axios.defaults.baseURL = 'https://yoli-backend.onrender.com';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
@@ -13,24 +17,24 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <BrowserRouter>
                 <CartProvider>
                     <App />
-                <Toaster
-                    position="bottom-right"
-                    toastOptions={{
-                        style: {
-                            background: '#ffffff',
-                            color: '#1f2937',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '8px',
-                            fontFamily: 'Inter, sans-serif',
-                            fontSize: '13px',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                        },
-                        success: {
-                            iconTheme: { primary: '#f85606', secondary: '#ffffff' },
-                        },
-                    }}
-                />
-            </CartProvider>
+                    <Toaster
+                        position="bottom-right"
+                        toastOptions={{
+                            style: {
+                                background: '#ffffff',
+                                color: '#1f2937',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '8px',
+                                fontFamily: 'Inter, sans-serif',
+                                fontSize: '13px',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            },
+                            success: {
+                                iconTheme: { primary: '#f85606', secondary: '#ffffff' },
+                            },
+                        }}
+                    />
+                </CartProvider>
             </BrowserRouter>
         </HelmetProvider>
     </React.StrictMode>
