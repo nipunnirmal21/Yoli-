@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { fetchShop } from '../services/api';
 import ProductCard from '../components/ProductCard';
 
@@ -17,6 +18,9 @@ export default function ShopPage() {
     if (loading) {
         return (
             <div className="max-w-7xl mx-auto px-4 py-8">
+                <Helmet>
+                    <title>Loading Shop... | Yoli</title>
+                </Helmet>
                 <div className="skeleton h-48 rounded-2xl mb-6" />
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -30,6 +34,9 @@ export default function ShopPage() {
     if (error || !data) {
         return (
             <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4 px-4">
+                <Helmet>
+                    <title>Shop Not Found | Yoli</title>
+                </Helmet>
                 <span className="text-5xl">🏪</span>
                 <p className="text-gray-600 font-medium">{error || 'Shop not found'}</p>
                 <Link to="/products" className="btn-primary text-sm px-6 py-2">← Browse Products</Link>
@@ -40,9 +47,23 @@ export default function ShopPage() {
     const { shop = {}, products = [], productCount = 0 } = data;
 
     const fmt = (n) => n?.toLocaleString('en-LK');
+    
+    const cleanDesc = shop.description 
+        ? shop.description.replace(/<[^>]+>/g, '').substring(0, 155) + '...'
+        : `Welcome to ${shop.name} on Yoli.`;
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-6">
+            <Helmet>
+                <title>{`${shop.name} | Yoli`}</title>
+                <meta name="description" content={cleanDesc} />
+                <meta property="og:title" content={`${shop.name} | Yoli`} />
+                <meta property="og:description" content={cleanDesc} />
+                <meta property="og:image" content={shop.logo || shop.logo_url} />
+                <meta property="og:url" content={currentUrl} />
+                <meta property="og:type" content="profile" />
+            </Helmet>
             {/* Shop Hero */}
             <div className="relative overflow-hidden rounded-2xl bg-violet-gradient p-8 mb-8">
                 {/* Decorative */}

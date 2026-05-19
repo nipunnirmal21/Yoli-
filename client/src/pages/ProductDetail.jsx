@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { fetchProductById } from '../services/api';
+import { Helmet } from 'react-helmet-async';
+import api, { fetchProductById } from '../services/api';
 import { useCart } from '../context/CartContext';
 
 const BADGE = { Bestseller: 'badge-amber', Limited: 'badge-red', New: 'badge-green', Sale: 'badge-purple' };
@@ -22,6 +23,9 @@ export default function ProductDetail() {
 
     if (loading) return (
         <div className="max-w-5xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Helmet>
+                <title>Loading Product... | Yoli</title>
+            </Helmet>
             <div className="skeleton aspect-square rounded-2xl" />
             <div className="space-y-4 pt-4">{[80, 60, 40, 90, 50].map((w, i) => <div key={i} className="skeleton h-4 rounded-xl" style={{ width: `${w}%` }} />)}</div>
         </div>
@@ -29,6 +33,9 @@ export default function ProductDetail() {
 
     if (error || !product) return (
         <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4 px-4">
+            <Helmet>
+                <title>Product Not Found | Yoli</title>
+            </Helmet>
             <span className="text-5xl">😕</span>
             <p className="text-gray-600 font-medium">{error || 'Product not found'}</p>
             <button onClick={() => navigate('/products')} className="btn-primary text-sm px-6 py-2">← Browse Products</button>
@@ -41,8 +48,60 @@ export default function ProductDetail() {
 
     const handleAdd = () => { for (let i = 0; i < qty; i++) addToCart(product); openCart(); };
 
+    const handleWhatsAppOrder = async () => {
+        let whatsappNumber = product?.seller?.whatsapp;
+
+        if (!whatsappNumber) {
+            try {
+                const raw = product?.seller;
+                const selName = (typeof raw === 'object' && raw !== null && raw.name) ? raw.name : String(raw || '');
+                
+                const r = await api.get('/stores');
+                const stores = r.data.stores || [];
+                
+                const matchedStore = stores.find(st => 
+                    st.name.toLowerCase() === selName.toLowerCase() || 
+                    (st.slug && st.slug.toLowerCase() === selName.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''))
+                );
+
+                if (matchedStore && matchedStore.whatsapp) {
+                    whatsappNumber = matchedStore.whatsapp;
+                }
+            } catch (err) {
+                console.error("Failed to resolve store:", err);
+            }
+        }
+
+        if (!whatsappNumber) {
+            alert('WhatsApp ordering is not available for this store at the moment.');
+            return;
+        }
+
+        const message = `Hello! I would like to order this product from your store:
+- Product Name: ${product.name}
+- Price: ${fmt(product.price)}
+- Product Link: ${window.location.href}`;
+
+        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    };
+
+    const cleanDesc = product.description 
+        ? product.description.replace(/<[^>]+>/g, '').substring(0, 155) + '...'
+        : 'Buy this amazing product at Yoli.';
+    const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+
     return (
         <div className="max-w-5xl mx-auto px-4 py-5">
+            <Helmet>
+                <title>{`${product.name} - Rs. ${product.price} | Yoli`}</title>
+                <meta name="description" content={cleanDesc} />
+                <meta property="og:title" content={`${product.name} - Rs. ${product.price} | Yoli`} />
+                <meta property="og:description" content={cleanDesc} />
+                <meta property="og:image" content={product.image || product.image_url} />
+                <meta property="og:url" content={currentUrl} />
+                <meta property="og:type" content="product" />
+            </Helmet>
             {/* Breadcrumb */}
             <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-5 flex-wrap">
                 <Link to="/" className="hover:text-primary transition-colors">Home</Link>
@@ -154,8 +213,13 @@ export default function ProductDetail() {
                                 <span className="text-xs text-gray-400">Max {product.stock}</span>
                             </div>
                             <div className="flex gap-3">
-                                <button onClick={handleAdd} className="btn-outline flex-1 py-3 text-sm">Add to Cart</button>
-                                <button onClick={handleAdd} className="btn-primary flex-1 py-3 text-sm">Buy Now</button>
+                                <button onClick={handleAdd} className="btn-outline flex-1 py-3 text-sm" style={{ display: 'none' }}>Add to Cart</button>
+                                <button 
+                                    onClick={handleWhatsAppOrder} 
+                                    className="btn-primary flex-1 py-3 text-sm w-full"
+                                >
+                                    Order via WhatsApp
+                                </button>
                             </div>
                         </>
                     )}

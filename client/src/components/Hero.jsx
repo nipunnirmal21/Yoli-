@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 
 const CATS = [
+    { label: 'Stores', slug: 'stores', emoji: '🏪', color: 'from-blue-400/20 to-blue-50' },
     { label: 'Jewellery', slug: 'jewellery', emoji: '💎', color: 'from-yellow-400/20 to-yellow-50' },
     { label: 'Clothing', slug: 'clothing', emoji: '👗', color: 'from-rose-400/20 to-rose-50' },
     { label: 'Accessories', slug: 'accessories', emoji: '🧺', color: 'from-purple-400/20 to-purple-50' },
@@ -8,7 +9,7 @@ const CATS = [
     { label: 'Home Décor', slug: 'home', emoji: '🕯️', color: 'from-orange-400/20 to-orange-50' },
 ];
 
-export default function Hero() {
+export default function Hero({ selectedCategory, onSelectCategory }) {
     return (
         <div className="max-w-7xl mx-auto px-4 pt-5 pb-3 space-y-5">
 
@@ -66,13 +67,27 @@ export default function Hero() {
 
             {/* Category pill strip */}
             <div className="flex gap-3 overflow-x-auto pb-1">
-                {CATS.map((c) => (
-                    <Link key={c.slug} to={`/products?category=${c.slug}`}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r ${c.color} border border-white/60 hover:shadow-md transition-all flex-shrink-0 group`}>
-                        <span className="text-lg">{c.emoji}</span>
-                        <span className="text-sm font-semibold text-gray-700 group-hover:text-primary transition-colors">{c.label}</span>
-                    </Link>
-                ))}
+                {CATS.map((c) => {
+                    const isActive = selectedCategory === c.slug;
+                    return (
+                        <button 
+                            key={c.slug} 
+                            onClick={() => onSelectCategory && onSelectCategory(c.slug)}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all flex-shrink-0 group ${
+                                isActive 
+                                ? 'bg-primary/10 border-primary shadow-sm ring-1 ring-primary' 
+                                : `bg-gradient-to-r ${c.color} border-white/60 hover:shadow-md`
+                            }`}
+                        >
+                            <span className="text-lg">{c.emoji}</span>
+                            <span className={`text-sm font-semibold transition-colors ${
+                                isActive ? 'text-primary' : 'text-gray-700 group-hover:text-primary'
+                            }`}>
+                                {c.label}
+                            </span>
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );

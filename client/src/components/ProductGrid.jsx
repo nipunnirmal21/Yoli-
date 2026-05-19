@@ -25,13 +25,13 @@ function SkeletonCard() {
     );
 }
 
-export default function ProductGrid({ limit, featuredOnly = false }) {
+export default function ProductGrid({ limit, featuredOnly = false, categoryOverride }) {
     const [searchParams, setSearchParams] = useSearchParams();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const category = searchParams.get('category') || 'all';
+    const category = categoryOverride || searchParams.get('category') || 'all';
     const sort = searchParams.get('sort') || 'popularity';
     const search = searchParams.get('search') || '';
 
@@ -40,13 +40,29 @@ export default function ProductGrid({ limit, featuredOnly = false }) {
         setError(null);
         try {
             const p = {};
-            if (category !== 'all') p.category = category;
+            // DO NOT pass category to backend; fetch all to handle legacy casing filtering on frontend
             if (sort) p.sort = sort;
             if (search) p.search = search;
-            if (limit) p.limit = limit;
+            // DO NOT pass limit to backend to avoid truncating before our frontend filter
             if (featuredOnly) p.featured = 'true';
+            
             const result = await fetchProducts(p);
-            setProducts(Array.isArray(result) ? result : []);
+            let fetched = Array.isArray(result) ? result : [];
+
+            // 1. Normalized Frontend Filtering (fixes legacy products discrepancy)
+            if (category && category !== 'all') {
+                const targetCat = category.toLowerCase().trim();
+                fetched = fetched.filter(product => 
+                    product.category && product.category.toLowerCase().trim() === targetCat
+                );
+            }
+
+            // 2. Frontend Slicing (apply limit after filtering)
+            if (limit) {
+                fetched = fetched.slice(0, limit);
+            }
+
+            setProducts(fetched);
         } catch {
             setError('Failed to load products.');
         } finally {
