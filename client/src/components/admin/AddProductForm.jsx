@@ -2,21 +2,21 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import api from '../../services/api';
 
-const CLOUD_NAME    = 'dl9v1wdco';
+const CLOUD_NAME = 'dl9v1wdco';
 const UPLOAD_PRESET = 'yoli_preset';
 
 const PRODUCT_CATEGORIES = ['clothing', 'accessories', 'skincare', 'home', 'jewellery', 'food', 'services'];
 
 const initialForm = {
-    seller:          '',   // store _id (used for dropdown only)
-    category:        '',   // Product category *
-    name:            '',   // Product Name
-    description:     '',   // Product Description
-    price:           '',   // Price *
+    seller: '',   // store _id (used for dropdown only)
+    category: '',   // Product category *
+    name: '',   // Product Name
+    description: '',   // Product Description
+    price: '',   // Price *
     discountedPrice: '',   // Discount Price *
-    image_url:       '',   // Product image (local preview state)
-    stock:           true, // Stock *
-    maxOrder:        '',   // Max Order *
+    image_url: '',   // Product image (local preview state)
+    stock: true, // Stock *
+    maxOrder: '',   // Max Order *
 };
 
 async function uploadToCloudinary(file) {
@@ -30,21 +30,28 @@ async function uploadToCloudinary(file) {
 }
 
 export default function AddProductForm() {
-    const [form,          setForm]          = useState(initialForm);
+    const [form, setForm] = useState(initialForm);
     const [selectedStore, setSelectedStore] = useState(null);   // full store object
-    const [imageFile,     setImageFile]     = useState(null);
-    const [imagePreview,  setImagePreview]  = useState('');
-    const [stores,        setStores]        = useState([]);
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState('');
+    const [stores, setStores] = useState([]);
     const [loadingStores, setLoadingStores] = useState(true);
-    const [loading,       setLoading]       = useState(false);
-    const [toast,         setToast]         = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [toast, setToast] = useState(null);
 
     // Fetch stores for Business Name dropdown
     useEffect(() => {
-        api.get('/admin/stores')
-            .then((r) => setStores(r.data.stores || []))
-            .catch(() => setStores([]))
-            .finally(() => setLoadingStores(false));
+        api.get('/stores')
+            .then((r) => {
+                setStores(r.data.stores || []);
+            })
+            .catch((err) => {
+                console.error('Failed to load stores:', err);
+                setStores([]);
+            })
+            .finally(() => {
+                setLoadingStores(false);
+            });
     }, []);
 
     const showToast = (msg, type = 'success') => {
@@ -61,7 +68,7 @@ export default function AddProductForm() {
     // but also save the full store object so we can build the seller sub-doc.
     const handleSellerChange = (e) => {
         const storeId = e.target.value;
-        const store   = stores.find((s) => s._id === storeId) || null;
+        const store = stores.find((s) => s._id === storeId) || null;
         setForm((f) => ({ ...f, seller: storeId }));
         setSelectedStore(store);
     };
@@ -90,25 +97,25 @@ export default function AddProductForm() {
 
             // Build seller sub-document expected by the Product schema
             const sellerPayload = {
-                name:        selectedStore.name,
-                slug:        selectedStore.slug ||
-                             selectedStore.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
-                logo:        selectedStore.logo_url || '',
+                name: selectedStore.name,
+                slug: selectedStore.slug ||
+                    selectedStore.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
+                logo: selectedStore.logo_url || '',
                 description: selectedStore.description || '',
-                location:    selectedStore.location || '',
-                rating:      selectedStore.rating || 4.5,
+                location: selectedStore.location || '',
+                rating: selectedStore.rating || 4.5,
             };
 
             await api.post('/admin/products', {
-                name:            form.name,
-                description:     form.description,
-                price:           Number(form.price),
+                name: form.name,
+                description: form.description,
+                price: Number(form.price),
                 discountedPrice: String(form.discountedPrice),
-                image:           imageUrl,          // schema field is `image`
-                stock:           form.stock ? 10 : 0, // schema expects Number
-                maxOrder:        Number(form.maxOrder),
-                category:        form.category,     // required enum field
-                seller:          sellerPayload,      // required object
+                image: imageUrl,          // schema field is `image`
+                stock: form.stock ? 10 : 0, // schema expects Number
+                maxOrder: Number(form.maxOrder),
+                category: form.category,     // required enum field
+                seller: sellerPayload,      // required object
             });
 
             showToast('✅ Product added successfully!');
@@ -166,7 +173,7 @@ export default function AddProductForm() {
                             </p>
                         )}
 
-                    {/* Category */}
+                        {/* Category */}
                     </div>
                     <div className="form-group">
                         <label className="form-label">
