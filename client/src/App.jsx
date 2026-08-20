@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
@@ -8,12 +8,24 @@ import ProductDetail from './pages/ProductDetail';
 import ShopPage from './pages/ShopPage';
 import DemoNotice from './components/DemoNotice';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminLogin from './pages/AdminLogin';
+
+const ProtectedAdminRoute = ({ children }) => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) return <Navigate to="/admin-login" />;
+    return children;
+};
 
 export default function App() {
     return (
         <Routes>
             {/* ── Admin (full-screen, no Navbar/Footer) ── */}
-            <Route path="/admin/*" element={<AdminDashboard />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+            <Route path="/admin/*" element={
+                <ProtectedAdminRoute>
+                    <AdminDashboard />
+                </ProtectedAdminRoute>
+            } />
 
             {/* ── Public site ── */}
             <Route path="*" element={

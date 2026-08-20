@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import api from '../../services/api';
 
 const CLOUD_NAME    = 'dl9v1wdco';
 const UPLOAD_PRESET = 'yoli_preset';
@@ -40,7 +41,7 @@ export default function AddProductForm() {
 
     // Fetch stores for Business Name dropdown
     useEffect(() => {
-        axios.get('/api/admin/stores')
+        api.get('/admin/stores')
             .then((r) => setStores(r.data.stores || []))
             .catch(() => setStores([]))
             .finally(() => setLoadingStores(false));
@@ -98,7 +99,7 @@ export default function AddProductForm() {
                 rating:      selectedStore.rating || 4.5,
             };
 
-            await axios.post('/api/admin/products', {
+            await api.post('/admin/products', {
                 name:            form.name,
                 description:     form.description,
                 price:           Number(form.price),

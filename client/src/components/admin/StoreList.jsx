@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import api from '../../services/api';
 
 const STORE_CATEGORIES = ['Food', 'Jewelers', 'Clothing', 'Skincare', 'Accessories', 'Services'];
 
@@ -29,7 +30,7 @@ export default function StoreList() {
     const [toast, setToast] = useState(null);
 
     const loadStores = () =>
-        axios.get('/api/stores').then((r) => setStores(r.data.stores || []));
+        api.get('/stores').then((r) => setStores(r.data.stores || []));
 
     useEffect(() => {
         loadStores()
@@ -70,7 +71,7 @@ export default function StoreList() {
         if (!editStore) return;
         setSaving(true);
         try {
-            const { data } = await axios.patch(`/api/admin/stores/${editStore._id}`, {
+            const { data } = await api.patch(`/admin/stores/${editStore._id}`, {
                 name: editName,
                 slug: editSlug,
                 category: editCategory,

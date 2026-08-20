@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import api from '../../services/api';
 
 const CLOUD_NAME   = 'dl9v1wdco';
 const UPLOAD_PRESET = 'yoli_preset';
@@ -89,7 +90,7 @@ export default function AddStoreForm() {
             if (logoFile)   logo_url   = await uploadToCloudinary(logoFile);
             if (bannerFile) banner_url = await uploadToCloudinary(bannerFile);
 
-            await axios.post('/api/admin/stores', { ...form, logo_url, banner_url });
+            await api.post('/admin/stores', { ...form, logo_url, banner_url });
             showToast('✅ Store registered successfully!');
             setForm(initialForm);
             setLogoFile(null); setBannerFile(null);

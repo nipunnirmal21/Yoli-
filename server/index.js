@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 // NOTE: All product data now comes exclusively from MongoDB.
 
@@ -179,16 +181,29 @@ app.get('/api/stores', async (req, res) => {
     }
 });
 
+const authMiddleware = require('./middleware/authMiddleware');
+
+// ─── Admin Auth Route ─────────────────────────────────────────────────────────
+app.post('/api/admin/login', (req, res) => {
+    const { username, password } = req.body;
+    
+    if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
+        const token = jwt.sign({ username }, process.env.JWT_SECRET, { expiresIn: '8h' });
+        return res.json({ success: true, token });
+    }
+    
+    return res.status(401).json({ success: false, message: 'Invalid username or password' });
+});
+
 // ─── Admin Store Routes ───────────────────────────────────────────────────────
 
 // POST /api/admin/stores — Register a new store
-app.post('/api/admin/stores', async (req, res) => {
+app.post('/api/admin/stores', authMiddleware, async (req, res) => {
     try {
         const store = new Store(req.body);
         const saved = await store.save();
         res.status(201).json({ success: true, store: saved });
     } catch (err) {
-        // Friendly duplicate name message
         if (err.code === 11000) {
             return res.status(400).json({ success: false, message: 'A store with this name already exists.' });
         }
@@ -197,7 +212,7 @@ app.post('/api/admin/stores', async (req, res) => {
 });
 
 // GET /api/admin/stores — Get all stores
-app.get('/api/admin/stores', async (req, res) => {
+app.get('/api/admin/stores', authMiddleware, async (req, res) => {
     try {
         const stores = await Store.find().sort({ createdAt: -1 });
         res.json({ success: true, stores });
@@ -207,7 +222,7 @@ app.get('/api/admin/stores', async (req, res) => {
 });
 
 // GET /api/admin/stores/:id — Get single store by ID
-app.get('/api/admin/stores/:id', async (req, res) => {
+app.get('/api/admin/stores/:id', authMiddleware, async (req, res) => {
     try {
         const store = await Store.findById(req.params.id);
         if (!store) return res.status(404).json({ success: false, message: 'Store not found' });
@@ -218,13 +233,13 @@ app.get('/api/admin/stores/:id', async (req, res) => {
 });
 
 const { updateStore, deleteStore } = require('./controllers/adminStoreController');
-app.patch('/api/admin/stores/:id', updateStore);
-app.delete('/api/admin/stores/:id', deleteStore);
+app.patch('/api/admin/stores/:id', authMiddleware, updateStore);
+app.delete('/api/admin/stores/:id', authMiddleware, deleteStore);
 
 // ─── Admin Product Routes ─────────────────────────────────────────────────────
 
 // POST /api/admin/products — Add a new product
-app.post('/api/admin/products', async (req, res) => {
+app.post('/api/admin/products', authMiddleware, async (req, res) => {
     try {
         const product = new Product(req.body);
         const saved = await product.save();
@@ -235,7 +250,7 @@ app.post('/api/admin/products', async (req, res) => {
 });
 
 // GET /api/admin/products — Get all products
-app.get('/api/admin/products', async (req, res) => {
+app.get('/api/admin/products', authMiddleware, async (req, res) => {
     try {
         const products = await Product.find().sort({ createdAt: -1 });
         res.json({ success: true, products });
@@ -245,8 +260,8 @@ app.get('/api/admin/products', async (req, res) => {
 });
 
 const { updateProduct, deleteProduct } = require('./controllers/adminProductController');
-app.patch('/api/admin/products/:id', updateProduct);
-app.delete('/api/admin/products/:id', deleteProduct);
+app.patch('/api/admin/products/:id', authMiddleware, updateProduct);
+app.delete('/api/admin/products/:id', authMiddleware, deleteProduct);
 
 // ─── Shop Route ───────────────────────────────────────────────────────────────
 const shopRoutes = require('./routes/shopRoutes');

@@ -60,10 +60,20 @@ export default function AdminDashboard() {
                 {/* Footer */}
                 <div className="sidebar-footer">
                     <div className="sidebar-footer-avatar">A</div>
-                    <div>
+                    <div style={{ flex: 1 }}>
                         <p className="sidebar-footer-name">Admin</p>
                         <p className="sidebar-footer-role">Super Admin</p>
                     </div>
+                    <button 
+                        onClick={() => {
+                            localStorage.removeItem('adminToken');
+                            window.location.href = '/admin-login';
+                        }}
+                        className="text-sm font-medium hover:text-gray-300"
+                        title="Logout"
+                    >
+                        Logout
+                    </button>
                 </div>
             </aside>
 

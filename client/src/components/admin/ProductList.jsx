@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import api from '../../services/api';
 
 const CLOUD_NAME = "dl9v1wdco";
 const UPLOAD_PRESET = "yoli_preset";
@@ -54,15 +55,15 @@ export default function ProductList() {
   const [toast, setToast] = useState(null);
 
   const loadProducts = () =>
-    axios.get("/api/products").then((r) => setProducts(r.data.products || []));
+    api.get('/products').then((r) => setProducts(r.data.products || []));
 
   useEffect(() => {
     loadProducts()
       .catch(() => setError("Failed to load products."))
       .finally(() => setLoading(false));
 
-    axios
-      .get("/api/stores")
+    api
+      .get("/stores")
       .then((r) => setStores(r.data.stores || []))
       .catch(() => {});
   }, []);
@@ -155,8 +156,7 @@ export default function ProductList() {
         }
       }
 
-      const { data } = await axios.patch(
-        `/api/admin/products/${editProduct._id}`,
+      const { data } = await api.patch(`/admin/products/${editProduct._id}`,
         {
           name: editName,
           price: Number(editPrice),
@@ -199,8 +199,8 @@ export default function ProductList() {
   const handleDelete = (p) => {
     if (!window.confirm("Are you sure you want to delete this product?"))
       return;
-    axios
-      .delete(`/api/admin/products/${p._id}`)
+    api
+      .delete(`/admin/products/${p._id}`)
       .then(() => {
         setProducts((prev) =>
           prev.filter((x) => String(x._id) !== String(p._id)),

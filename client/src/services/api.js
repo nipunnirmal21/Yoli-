@@ -2,8 +2,27 @@ import axios from 'axios';
 
 // සයිට් එක සහ Render Backend එක යා කරන පාලම 🚀
 const api = axios.create({
-    baseURL: 'https://yoli-backend.onrender.com/api' // 👈 කෙලින්ම ලයිව් සර්වර් එකට යැව්වා
+    baseURL: '/api' // Vite proxy -> http://localhost:5000/api
 });
+
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => Promise.reject(error));
+
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('adminToken');
+            window.location.href = '/admin-login';
+        }
+        return Promise.reject(error);
+    }
+);
 
 export const fetchProducts = (params = {}) =>
     api.get('/products', { params }).then((r) => r.data?.products ?? []);
