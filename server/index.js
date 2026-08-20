@@ -12,7 +12,59 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 // ─────────────────────────────────────────────────────────────────────────────
 
-app.use(cors());
+// ─────────────────────────────────────────────────────────────────────────────
+// CORS Configuration
+// ─────────────────────────────────────────────────────────────────────────────
+
+const allowedOrigins = new Set([
+    'https://yoli.lk',
+    'https://www.yoli.lk',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+]);
+
+const corsOptions = {
+    origin(origin, callback) {
+
+        // Allow requests without an Origin header
+        // Example: direct API requests / server-to-server requests
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        // Allow trusted Yoli frontend origins
+        if (allowedOrigins.has(origin)) {
+            return callback(null, true);
+        }
+
+        console.warn(`🚫 Blocked CORS origin: ${origin}`);
+
+        return callback(
+            new Error('Not allowed by CORS')
+        );
+    },
+
+    methods: [
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE',
+        'OPTIONS',
+    ],
+
+    allowedHeaders: [
+        'Content-Type',
+        'Authorization',
+    ],
+
+    optionsSuccessStatus: 204,
+};
+
+// Apply CORS before all API routes
+app.use(cors(corsOptions));
+
+// Parse JSON request bodies
 app.use(express.json());
 
 // ─────────────────────────────────────────────────────────────────────────────
