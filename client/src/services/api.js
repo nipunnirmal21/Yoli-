@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // සයිට් එක සහ Render Backend එක යා කරන පාලම 🚀
 const api = axios.create({
-    baseURL: '/api' // Vite proxy -> http://localhost:5000/api
+    baseURL: import.meta.env.VITE_API_URL || '/api'
 });
 
 api.interceptors.request.use((config) => {
